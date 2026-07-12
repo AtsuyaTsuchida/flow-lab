@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flow-lab",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8190"],
+      "port": 8190
+    }
+  ]
+}
