@@ -1,5 +1,48 @@
 # FLOW LAB — GPU FLUID DYNAMICS
 
+[English](#english) | [日本語](#日本語)
+
+---
+
+## English
+
+A 2D incompressible-fluid simulation that visualizes **Kármán vortex streets, shear layers, and buoyant plumes** around obstacles as flame-colored dye streaklines. Runs entirely in a single WebGL2 fragment-shader HTML file.
+
+### Run
+```sh
+cd ~/dev/flow-lab
+python3 -m http.server 8191
+# → http://localhost:8191/
+```
+
+### Solver
+- **Advection**: clamped MacCormack (semi-Lagrangian, 2nd order) — for both velocity and dye.
+- **Incompressibility**: divergence → Jacobi iterations (default 50) → subtract pressure gradient.
+- **Vorticity confinement**: restores small-scale eddies lost to numerical diffusion (strength slider).
+- **Boundaries**: obstacles = no-slip (zero velocity + Neumann pressure); outflow edge = Dirichlet p = 0 (open boundary).
+- **Grid**: velocity 1024×576 RG16F / dye 2048×1152 R16F (ping-pong FBO).
+
+### Rendering (particles)
+The default PARTICLES view draws up to **1.05M GPU particles** (positions held in an RGBA32F texture, advected in a fragment shader, drawn attributeless via `gl_VertexID` POINTS) as additively-blended circular sprites. Particles spawn from a line emitter at the inflow edge and respawn on lifetime/off-screen/obstacle. Because each line carries coherent brightness, you get the bead-like streaklines of the reference image. Tune COUNT / SIZE / ALPHA / LIFETIME in the PARTICLES group; PALETTE = MONO gives the black-and-white reference look. DYE / VORTICITY / SPEED / PRESSURE views are also kept (the dye field is always computed as the buoyancy driver).
+
+### Controls
+- Drag: stir (velocity + dye splat)
+- SHIFT + drag: paint obstacles / ALT + drag: erase
+- SPACE: pause / R: reset dye
+- SAVE PNG / REC WEBM buttons to export
+
+### Presets
+KÁRMÁN STREET (reference reproduction) / CYLINDER GRID / SHEAR LAYER (Kelvin-Helmholtz) / RISING PLUME (buoyancy) / FREE STIR (auto-stir).
+
+### Stabilization notes
+- Vorticity confinement + continuous inflow injects unbounded energy, so velocity must be clamped at `wind×4` or it blows up.
+- All-Neumann (closed box) can't sustain a wind-tunnel flow under mass conservation → make the outflow edge an open p = 0 boundary.
+- Momentum still decays mid-stream, so a weak sustain force (SUSTAIN: blend toward target velocity, 0.012/frame) is applied everywhere.
+
+---
+
+## 日本語
+
 障害物まわりのカルマン渦列・せん断層・浮力プルームを、染料ストリークラインの火炎色で可視化する
 2D非圧縮流体シミュレーション。WebGL2フラグメントシェーダーのみで完結する単一HTML。
 
